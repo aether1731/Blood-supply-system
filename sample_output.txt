@@ -1,0 +1,89 @@
+No scenario file given; using the built-in sample.
+Usage: bloodflow [scenario_file]
+
+Scenario: Metropolitan emergency: multi-hospital blood request surge
+Nodes: 14 | Blood banks: 2 | Requests: 5 | Vehicles: 3
+
+==============================================================================
+STAGE 1  Shortest delivery routes (Dijkstra)
+==============================================================================
+Blood bank                  Hospital                    Travel time Route
+------------------------------------------------------------------------------
+Central Blood Bank          City General Hospital       13.0 min    Central Blood Bank -> Junction J1 -> Junction J3 -> City General Hospital
+Central Blood Bank          Riverside Medical College   22.0 min    Central Blood Bank -> Junction J1 -> Junction J3 -> Junction J5 -> Riverside Medical College
+Central Blood Bank          Metro Trauma Center         23.0 min    Central Blood Bank -> Junction J2 -> Junction J6 -> Metro Trauma Center
+Northside Blood Bank        City General Hospital       16.0 min    Northside Blood Bank -> Junction J3 -> City General Hospital
+Northside Blood Bank        Riverside Medical College   15.0 min    Northside Blood Bank -> Junction J4 -> Junction J5 -> Riverside Medical College
+Northside Blood Bank        Metro Trauma Center         20.0 min    Northside Blood Bank -> Junction J4 -> Junction J5 -> Junction J7 -> Metro Trauma Center
+
+==============================================================================
+STAGE 2  Greedy triage ranking
+==============================================================================
+Rank  Req   Hospital                    Group  Units  Urgency    Critical  Deadline   Score
+------------------------------------------------------------------------------
+1     R1    City General Hospital       O-     20     CRITICAL   9         30.0 min   30135.0
+2     R5    Riverside Medical College   O-     10     CRITICAL   7         40.0 min   30115.0
+3     R3    Metro Trauma Center         O-     15     HIGH       6         45.0 min   20105.0
+4     R4    City General Hospital       B+     12     HIGH       3         60.0 min   20075.0
+5     R2    Riverside Medical College   A+     30     MEDIUM     2         90.0 min   10040.0
+
+==============================================================================
+STAGE 3  Supply allocation (Edmonds-Karp max-flow, by urgency tier)
+==============================================================================
+Tier CRITICAL   requests: 2
+    Central Blood Bank     -> R1 City General Hospital     18  units of O-  (exact)       13.0 min
+    Northside Blood Bank   -> R1 City General Hospital     2   units of O-  (exact)       16.0 min
+    Northside Blood Bank   -> R5 Riverside Medical College 10  units of O-  (exact)       15.0 min
+    subtotal: 30 units (30 exact-match, 0 substituted)
+Tier HIGH       requests: 2
+    Central Blood Bank     -> R4 City General Hospital     10  units of B+  (exact)       13.0 min
+    Northside Blood Bank   -> R4 City General Hospital     2   units of B+  (exact)       16.0 min
+    subtotal: 12 units (12 exact-match, 0 substituted)
+Tier MEDIUM     requests: 1
+    Central Blood Bank     -> R2 Riverside Medical College 25  units of A+  (exact)       22.0 min
+    Northside Blood Bank   -> R2 Riverside Medical College 5   units of A+  (exact)       15.0 min
+    subtotal: 30 units (30 exact-match, 0 substituted)
+
+==============================================================================
+STAGE 4  Vehicle loading (0/1 knapsack dynamic programming)
+==============================================================================
+V1 (Central)    capacity 25  | loaded 18  | items 1 | priority value 542430
+V2 (Central)    capacity 20  | loaded 10  | items 1 | priority value 200750
+V3 (Northside)  capacity 30  | loaded 19  | items 4 | priority value 451770
+
+==============================================================================
+STAGE 5  Dispatch plan
+==============================================================================
+
+V1 (Central) from Central Blood Bank  (18/25 units)
+    R1  City General Hospital       18 units of O-   ETA 13.0 min  (deadline 30.0 min)
+          route: Central Blood Bank -> Junction J1 -> Junction J3 -> City General Hospital
+
+V2 (Central) from Central Blood Bank  (10/20 units)
+    R4  City General Hospital       10 units of B+   ETA 13.0 min  (deadline 60.0 min)
+          route: Central Blood Bank -> Junction J1 -> Junction J3 -> City General Hospital
+
+V3 (Northside) from Northside Blood Bank  (19/30 units)
+    R1  City General Hospital       2 units of O-   ETA 16.0 min  (deadline 30.0 min)
+          route: Northside Blood Bank -> Junction J3 -> City General Hospital
+    R5  Riverside Medical College   10 units of O-   ETA 15.0 min  (deadline 40.0 min)
+          route: Northside Blood Bank -> Junction J4 -> Junction J5 -> Riverside Medical College
+    R4  City General Hospital       2 units of B+   ETA 16.0 min  (deadline 60.0 min)
+          route: Northside Blood Bank -> Junction J3 -> City General Hospital
+    R2  Riverside Medical College   5 units of A+   ETA 15.0 min  (deadline 90.0 min)
+          route: Northside Blood Bank -> Junction J4 -> Junction J5 -> Riverside Medical College
+
+Allocated but awaiting a second trip: 25 units
+
+==============================================================================
+SUMMARY
+==============================================================================
+Req   Hospital                    Group  Requested   Allocated   Status
+------------------------------------------------------------------------------
+R1    City General Hospital       O-     20          20          fully met
+R2    Riverside Medical College   A+     30          30          fully met
+R3    Metro Trauma Center         O-     15          0           UNMET
+R4    City General Hospital       B+     12          12          fully met
+R5    Riverside Medical College   O-     10          10          fully met
+------------------------------------------------------------------------------
+Total demand 87 units | allocated 72 units | fulfilment 82.8%

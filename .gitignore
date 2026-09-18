@@ -1,0 +1,6 @@
+*.o
+*.d
+bloodflow
+run_tests
+*.pdf
+.DS_Store

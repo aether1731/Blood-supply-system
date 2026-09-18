@@ -1,0 +1,78 @@
+# Emergency Blood Supply Distribution -- scenario file
+#
+# FORMAT
+#   TITLE     <free text to end of line>
+#   NODES     <n>            then n rows: <id> <name_with_underscores> <BANK|HOSPITAL|JUNCTION>
+#   EDGES     <m>            then m rows: <u> <v> <travel_minutes>      (roads are two-way)
+#   BANKS     <k>            then k blocks: <nodeId> <numGroups>, then numGroups rows: <group> <units>
+#   REQUESTS  <n>            then n rows: <hospitalNodeId> <group> <units> <urgency> <criticalPatients> <deadlineMinutes>
+#   VEHICLES  <n>            then n rows: <bankIndex> <capacity> <name_with_underscores>
+#
+#   groups   : O- O+ A- A+ B- B+ AB- AB+
+#   urgency  : LOW MEDIUM HIGH CRITICAL
+#   '#' starts a comment that runs to the end of the line.
+
+TITLE Metropolitan emergency: multi-hospital blood request surge
+
+NODES 14
+0  Central_Blood_Bank        BANK
+1  Northside_Blood_Bank      BANK
+2  City_General_Hospital     HOSPITAL
+3  Riverside_Medical_College HOSPITAL
+4  Metro_Trauma_Center       HOSPITAL
+5  Junction_J1               JUNCTION
+6  Junction_J2               JUNCTION
+7  Junction_J3               JUNCTION
+8  Junction_J4               JUNCTION
+9  Junction_J5               JUNCTION
+10 Junction_J6               JUNCTION
+11 Junction_J7               JUNCTION
+12 Junction_J8               JUNCTION
+13 Junction_J9               JUNCTION
+
+EDGES 20
+0  5   4
+0  6   6
+0  13 11
+5  7   5
+5  2  12
+6  7   3
+6  10  8
+7  2   4
+7  9   7
+1  7  12
+1  8   5
+8  9   4
+8  12  9
+9  3   6
+9  11  5
+10 4   9
+10 11  4
+11 4   6
+12 2  10
+13 3  14
+
+BANKS 2
+0 5
+O-  18
+O+  40
+A+  25
+B+  10
+AB+  5
+1 4
+O-  12
+A+  30
+A-   8
+B+  14
+
+REQUESTS 5
+2 O- 20 CRITICAL 9 30
+3 A+ 30 MEDIUM   2 90
+4 O- 15 HIGH     6 45
+2 B+ 12 HIGH     3 60
+3 O- 10 CRITICAL 7 40
+
+VEHICLES 3
+0 25 V1_(Central)
+0 20 V2_(Central)
+1 30 V3_(Northside)
