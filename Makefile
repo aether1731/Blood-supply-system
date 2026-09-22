@@ -1,5 +1,6 @@
 # CSE 4403 (Algorithms) -- Assignment 2
 # Emergency Blood Supply Distribution and Hospital Allocation System
+# Compiler and compilation flags
 
 CXX      = g++
 CXXFLAGS = -std=c++17 -O2 -Wall -Wextra -MMD -MP
